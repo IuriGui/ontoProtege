@@ -1,0 +1,653 @@
+@prefix : <http://www.semanticweb.org/iuris/ontologies/2026/10/sistema-erp#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix gufo: <http://purl.org/nemo/gufo#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@base <http://www.semanticweb.org/iuris/ontologies/2026/10/sistema-erp#> .
+
+<http://www.semanticweb.org/iuris/ontologies/2026/10/sistema-erp> rdf:type owl:Ontology ;
+                          owl:imports gufo: .
+
+:Comprou rdf:type owl:ObjectProperty ;
+         rdfs:domain :Cliente ;
+         rdfs:range :Produto .
+
+:pertenceAEmpresa rdf:type owl:ObjectProperty ;
+                   rdfs:domain :Conta ;
+                   rdfs:range :Empresa .
+
+:Fornece rdf:type owl:ObjectProperty ;
+         rdfs:domain :Fornecedor ;
+         rdfs:range :Produto .
+
+:temCobrancaPendente rdf:type owl:ObjectProperty ;
+                                  rdfs:domain :Cliente ;
+                                  rdfs:range :Cobranca .
+
+:produtoHasEstoque rdf:type owl:ObjectProperty ;
+                   rdfs:domain :Produto ;
+                   rdfs:range :Estoque .
+
+:AlteracaoEstoque rdf:type owl:Class ;
+                  rdfs:subClassOf gufo:Event ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty [ owl:inverseOf gufo:contributedToTrigger
+                                                   ] ;
+                                    owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                    owl:onClass [ rdf:type owl:Class ;
+                                                  owl:unionOf ( :ProdutoVendido
+                                                                :ProdutoComprado
+                                                              )
+                                                ]
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty [ owl:inverseOf gufo:participatedIn
+                                                   ] ;
+                                    owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                    owl:onClass :Estoquista
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty [ owl:inverseOf gufo:contributedToTrigger ] ;
+                                    owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                    owl:onClass :ProdutoComprado
+                                  ] .
+
+:Cliente rdf:type owl:Class ;
+         rdfs:subClassOf :Pessoa ,
+                         [ rdf:type owl:Restriction ;
+                           owl:onProperty [ owl:inverseOf gufo:mediates
+                                          ] ;
+                           owl:someValuesFrom :HistoricoCliente
+                         ] ,
+                         [ rdf:type owl:Restriction ;
+                           owl:onProperty gufo:participatedIn ;
+                           owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                           owl:onClass :RegistroDeVenda
+                         ] .
+
+:Cobranca rdf:type owl:Class ;
+          rdfs:subClassOf gufo:FunctionalComplex ,
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty gufo:wasCreatedIn ;
+                            owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                            owl:onClass :GerarCobranca
+                          ],
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty [ owl:inverseOf gufo:isComponentOf ] ;
+                            owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                            owl:onClass :OperacaoFinanceira
+                          ] .
+
+:CompraDeProdutos rdf:type owl:Class ;
+                  rdfs:subClassOf gufo:Event ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty [ owl:inverseOf gufo:participatedIn
+                                                   ] ;
+                                    owl:someValuesFrom :Empresa
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty gufo:broughtAbout ;
+                                    owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                    owl:onClass :ProdutoComprado
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty [ owl:inverseOf gufo:wasCreatedIn ] ;
+                                    owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                    owl:onClass :FornecedorProduto
+                                  ] .
+
+:Conta rdf:type owl:Class ;
+       rdfs:subClassOf gufo:FunctionalComplex ,
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty gufo:wasCreatedIn ;
+                         owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                         owl:onClass :GerarContas
+                       ],
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty [ owl:inverseOf gufo:isComponentOf ] ;
+                         owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                         owl:onClass :OperacaoFinanceira
+                       ] .
+
+:ContasDaEmpresa rdf:type owl:Class ;
+                 rdfs:subClassOf gufo:Relator ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty gufo:mediates ;
+                                   owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                   owl:onClass :Conta
+                                 ] ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty gufo:mediates ;
+                                   owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                   owl:onClass :Empresa
+                                 ] .
+
+:Empresa rdf:type owl:Class ;
+         rdfs:subClassOf gufo:FunctionalComplex .
+
+:Estoque rdf:type owl:Class ;
+         rdfs:subClassOf gufo:FunctionalComplex ,
+                         [ rdf:type owl:Restriction ;
+                           owl:onProperty gufo:participatedIn ;
+                           owl:someValuesFrom :AlteracaoEstoque
+                         ] .
+
+:Estoquista rdf:type owl:Class ;
+            rdfs:subClassOf :Usuario .
+
+:Fornecedor rdf:type owl:Class ;
+            rdfs:subClassOf :Pessoa ,
+                            [ rdf:type owl:Restriction ;
+                              owl:onProperty [ owl:inverseOf gufo:mediates ] ;
+                              owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                              owl:onClass :FornecedorProduto
+                            ] .
+
+:FornecedorProduto rdf:type owl:Class ;
+                   rdfs:subClassOf gufo:Relator ,
+                                   [ rdf:type owl:Restriction ;
+                                     owl:onProperty gufo:mediates ;
+                                     owl:someValuesFrom :Fornecedor
+                                   ] ,
+                                   [ rdf:type owl:Restriction ;
+                                     owl:onProperty gufo:mediates ;
+                                     owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                     owl:onClass :Produto
+                                   ] ,
+                                   [ rdf:type owl:Restriction ;
+                                     owl:onProperty gufo:wasCreatedIn ;
+                                     owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                     owl:onClass :CompraDeProdutos
+                                   ] .
+
+:GerarCobranca rdf:type owl:Class ;
+               rdfs:subClassOf gufo:Event ,
+                               [ rdf:type owl:Restriction ;
+                                 owl:onProperty [ owl:inverseOf gufo:contributedToTrigger
+                                                ] ;
+                                 owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                 owl:onClass :ProdutoVendido
+                               ] ,
+                               [ rdf:type owl:Restriction ;
+                                 owl:onProperty [ owl:inverseOf gufo:wasCreatedIn ] ;
+                                 owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                 owl:onClass :Cobranca
+                               ] .
+
+:GerarContas rdf:type owl:Class ;
+             rdfs:subClassOf gufo:Event ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty [ owl:inverseOf gufo:wasCreatedIn ] ;
+                               owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                               owl:onClass :Conta
+                             ] ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty [ owl:inverseOf gufo:contributedToTrigger
+                                              ] ;
+                               owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                               owl:onClass :ProdutoComprado
+                             ] .
+
+:HistoricoCliente rdf:type owl:Class ;
+                  rdfs:subClassOf gufo:Relator ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty gufo:wasCreatedIn ;
+                                    owl:someValuesFrom :RegistroDeVenda
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty gufo:mediates ;
+                                    owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                    owl:onClass :Cliente
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty gufo:mediates ;
+                                    owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                    owl:onClass :Produto
+                                  ] .
+
+:OperacaoAvista rdf:type owl:Class ;
+                rdfs:subClassOf :OperacaoFinanceira .
+
+:OperacaoFinanceira rdf:type owl:Class ;
+                    rdfs:subClassOf gufo:FunctionalComplex ,
+                                    [ rdf:type owl:Restriction ;
+                                      owl:onProperty gufo:isComponentOf ;
+                                      owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                      owl:onClass :Cobranca
+                                    ] ,
+                                    [ rdf:type owl:Restriction ;
+                                      owl:onProperty gufo:isComponentOf ;
+                                      owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                      owl:onClass :Conta
+                                    ] .
+
+:OperacaoParcelada rdf:type owl:Class ;
+                   rdfs:subClassOf :OperacaoFinanceira .
+
+:PendenciasFinanceirasDoCliente rdf:type owl:Class ;
+                                rdfs:subClassOf gufo:Relator ,
+                                                [ rdf:type owl:Restriction ;
+                                                  owl:onProperty gufo:mediates ;
+                                                  owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                                  owl:onClass :Cliente
+                                                ],
+                                                [ rdf:type owl:Restriction ;
+                                                  owl:onProperty gufo:mediates ;
+                                                  owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                                  owl:onClass :Cobranca
+                                                ] .
+
+:Pessoa rdf:type owl:Class ;
+        rdfs:subClassOf gufo:FunctionalComplex ;
+        owl:disjointWith :Empresa .
+
+:Produto rdf:type owl:Class ;
+         rdfs:subClassOf gufo:FunctionalComplex .
+
+:ProdutoComprado rdf:type owl:Class ;
+                 rdfs:subClassOf gufo:Situation ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty gufo:contributedToTrigger ;
+                                   owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                   owl:onClass :AlteracaoEstoque
+                                 ] ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty gufo:contributedToTrigger ;
+                                   owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                   owl:onClass :GerarContas
+                                 ] ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty [ owl:inverseOf gufo:broughtAbout
+                                                  ] ;
+                                   owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                   owl:onClass :CompraDeProdutos
+                                 ] .
+
+:ProdutoVendido rdf:type owl:Class ;
+                rdfs:subClassOf gufo:Situation ,
+                                [ rdf:type owl:Restriction ;
+                                  owl:onProperty gufo:contributedToTrigger ;
+                                  owl:someValuesFrom :AlteracaoEstoque
+                                ] ,
+                                [ rdf:type owl:Restriction ;
+                                  owl:onProperty gufo:contributedToTrigger ;
+                                  owl:someValuesFrom :GerarCobranca
+                                ] ,
+                                [ rdf:type owl:Restriction ;
+                                  owl:onProperty [ owl:inverseOf gufo:broughtAbout
+                                                 ] ;
+                                  owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                  owl:onClass :RegistroDeVenda
+                                ] .
+
+:RegistroDeVenda rdf:type owl:Class ;
+                 rdfs:subClassOf gufo:Event ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty [ owl:inverseOf gufo:participatedIn
+                                                  ] ;
+                                   owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                   owl:onClass :Cliente
+                                 ] ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty [ owl:inverseOf gufo:participatedIn
+                                                  ] ;
+                                   owl:someValuesFrom :Produto
+                                 ] ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty gufo:broughtAbout ;
+                                   owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                   owl:onClass :ProdutoVendido
+                                 ] ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty [ owl:inverseOf gufo:wasCreatedIn
+                                                  ] ;
+                                   owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                   owl:onClass :HistoricoCliente
+                                 ] .
+
+:Usuario rdf:type owl:Class ;
+         rdfs:subClassOf :Pessoa .
+
+:AlteracaoEstoque rdf:type owl:NamedIndividual ,
+                           gufo:EventType .
+
+:Cliente rdf:type owl:NamedIndividual ,
+                  gufo:Role .
+
+:Cobranca rdf:type owl:NamedIndividual ,
+                   gufo:Kind .
+
+:CompraDeProdutos rdf:type owl:NamedIndividual ,
+                           gufo:EventType .
+
+:Comprou rdf:type owl:NamedIndividual ,
+                  gufo:MaterialRelationshipType ;
+         gufo:isDerivedFrom :HistoricoCliente .
+
+:Conta rdf:type owl:NamedIndividual ,
+                gufo:Kind .
+
+:ContasDaEmpresa rdf:type owl:NamedIndividual ,
+                          gufo:Kind .
+
+:pertenceAEmpresa rdf:type owl:NamedIndividual ,
+                            gufo:MaterialRelationshipType ;
+                   gufo:isDerivedFrom :ContasDaEmpresa .
+
+:Empresa rdf:type owl:NamedIndividual ,
+                  gufo:Kind .
+
+:Estoque rdf:type owl:NamedIndividual ,
+                  gufo:Kind .
+
+:Estoquista rdf:type owl:NamedIndividual ,
+                     gufo:Role .
+
+:Fornece rdf:type owl:NamedIndividual ,
+                  gufo:MaterialRelationshipType ;
+         gufo:isDerivedFrom :FornecedorProduto .
+
+:Fornecedor rdf:type owl:NamedIndividual ,
+                     gufo:Role .
+
+:FornecedorProduto rdf:type owl:NamedIndividual ,
+                            gufo:Kind .
+
+:GerarCobranca rdf:type owl:NamedIndividual ,
+                        gufo:EventType .
+
+:GerarContas rdf:type owl:NamedIndividual ,
+                      gufo:EventType .
+
+:HistoricoCliente rdf:type owl:NamedIndividual ,
+                           gufo:Kind .
+
+:OperacaoAvista rdf:type owl:NamedIndividual ,
+                         gufo:Kind .
+
+:OperacaoFinanceira rdf:type owl:NamedIndividual ,
+                             gufo:Category .
+
+:OperacaoParcelada rdf:type owl:NamedIndividual ,
+                            gufo:Kind .
+
+:PendenciasFinanceirasDoCliente rdf:type owl:NamedIndividual ,
+                                         gufo:Kind .
+
+:temCobrancaPendente rdf:type owl:NamedIndividual ,
+                                           gufo:MaterialRelationshipType ;
+                                  gufo:isDerivedFrom :PendenciasFinanceirasDoCliente .
+
+:Pessoa rdf:type owl:NamedIndividual ,
+                 gufo:Kind .
+
+:Produto rdf:type owl:NamedIndividual ,
+                  gufo:Kind .
+
+:ProdutoComprado rdf:type owl:NamedIndividual ,
+                          gufo:SituationType .
+
+:ProdutoVendido rdf:type owl:NamedIndividual ,
+                         gufo:SituationType .
+
+:RegistroDeVenda rdf:type owl:NamedIndividual ,
+                          gufo:EventType .
+
+:Usuario rdf:type owl:NamedIndividual ,
+                  gufo:Role .
+
+:AlteracaoEstoque rdfs:label "AlteracaoEstoque"@en .
+
+:Cliente rdfs:label "Cliente"@en .
+
+:Cobranca rdfs:label "Cobranca"@en .
+
+:CompraDeProdutos rdfs:label "CompraDeProdutos"@en .
+
+:Comprou rdfs:label "Comprou"@en .
+
+:Conta rdfs:label "Conta"@en .
+
+:ContasDaEmpresa rdfs:label "ContasDaEmpresa"@en .
+
+:pertenceAEmpresa rdfs:label "pertenceAEmpresa"@en .
+
+:Empresa rdfs:label "Empresa"@en .
+
+:Estoque rdfs:label "Estoque"@en .
+
+:Estoquista rdfs:label "Estoquista"@en .
+
+:Fornece rdfs:label "Fornece"@en .
+
+:Fornecedor rdfs:label "Fornecedor"@en .
+
+:FornecedorProduto rdfs:label "FornecedorProduto"@en .
+
+:GerarCobranca rdfs:label "GerarCobranca"@en .
+
+:GerarContas rdfs:label "GerarContas"@en .
+
+:HistoricoCliente rdfs:label "HistoricoCliente"@en .
+
+:OperacaoAvista rdfs:label "OperacaoAvista"@en .
+
+:OperacaoFinanceira rdfs:label "OperacaoFinanceira"@en .
+
+:OperacaoParcelada rdfs:label "OperacaoParcelada"@en .
+
+:PendenciasFinanceirasDoCliente rdfs:label "PendenciasFinanceirasDoCliente"@en .
+
+:temCobrancaPendente rdfs:label "temCobrancaPendente"@en .
+
+:Pessoa rdfs:label "Pessoa"@en .
+
+:Produto rdfs:label "Produto"@en .
+
+:ProdutoComprado rdfs:label "ProdutoComprado"@en .
+
+:ProdutoVendido rdfs:label "ProdutoVendido"@en .
+
+:RegistroDeVenda rdfs:label "RegistroDeVenda"@en .
+
+:Usuario rdfs:label "Usuario"@en .
+
+:compradorEm rdf:type owl:ObjectProperty ;
+    rdfs:subPropertyOf gufo:participatedIn ;
+    rdfs:domain :Cliente ;
+    rdfs:range :RegistroDeVenda .
+
+:vendidoEm rdf:type owl:ObjectProperty ;
+    rdfs:subPropertyOf gufo:participatedIn ;
+    rdfs:domain :Produto ;
+    rdfs:range :RegistroDeVenda .
+
+:Comprou owl:propertyChainAxiom ( :compradorEm [ owl:inverseOf :vendidoEm ] ) .
+
+:foiCompradoPor rdf:type owl:ObjectProperty ;
+    owl:inverseOf :Comprou .
+
+:ClienteComPendencia rdf:type owl:Class , owl:NamedIndividual , gufo:Role ;
+    owl:equivalentClass [ rdf:type owl:Restriction ;
+        owl:onProperty :temCobrancaPendente ;
+        owl:someValuesFrom :Cobranca ] .
+
+:ClienteRecorrente rdf:type owl:Class , owl:NamedIndividual , gufo:Role ;
+    owl:equivalentClass [ rdf:type owl:Restriction ;
+        owl:onProperty :compradorEm ;
+        owl:minQualifiedCardinality "2"^^xsd:nonNegativeInteger ;
+        owl:onClass :RegistroDeVenda ] .
+
+:joao rdf:type owl:NamedIndividual , :Pessoa ;
+    :compradorEm :venda1 , :venda2 ;
+    :temCobrancaPendente :cobranca1 .
+
+:mercadoLtda rdf:type owl:NamedIndividual , :Pessoa ;
+    :compradorEm :venda3 .
+
+:techLtda rdf:type owl:NamedIndividual , :Pessoa ;
+    :Fornece :notebook , :mouse .
+
+:carlos rdf:type owl:NamedIndividual , :Pessoa ;
+    :Fornece :cadeira .
+
+:maria rdf:type owl:NamedIndividual , :Estoquista ;
+    gufo:participatedIn :alteracaoEstoque1 , :alteracaoEstoque2 .
+
+:nossaEmpresa rdf:type owl:NamedIndividual , :Empresa ;
+    gufo:participatedIn :compra1 .
+
+:notebook rdf:type owl:NamedIndividual ;
+    :vendidoEm :venda1 ;
+    :produtoHasEstoque :estoqueCentral .
+
+:mouse rdf:type owl:NamedIndividual ;
+    :vendidoEm :venda2 .
+
+:cadeira rdf:type owl:NamedIndividual ;
+    :vendidoEm :venda3 .
+
+:estoqueCentral rdf:type owl:NamedIndividual ;
+    gufo:participatedIn :alteracaoEstoque1 , :alteracaoEstoque2 .
+
+:venda1 rdf:type owl:NamedIndividual ;
+    gufo:broughtAbout :situacaoVenda1 .
+
+:venda2 rdf:type owl:NamedIndividual .
+
+:venda3 rdf:type owl:NamedIndividual .
+
+:situacaoVenda1 rdf:type owl:NamedIndividual , :ProdutoVendido ;
+    gufo:contributedToTrigger :gerarCobranca1 , :alteracaoEstoque1 .
+
+:historico1 rdf:type owl:NamedIndividual , :HistoricoCliente ;
+    gufo:wasCreatedIn :venda1 ;
+    gufo:mediates :joao , :notebook .
+
+:gerarCobranca1 rdf:type owl:NamedIndividual , :GerarCobranca .
+
+:cobranca1 rdf:type owl:NamedIndividual ;
+    gufo:wasCreatedIn :gerarCobranca1 .
+
+:pendencia1 rdf:type owl:NamedIndividual , :PendenciasFinanceirasDoCliente ;
+    gufo:mediates :joao , :cobranca1 .
+
+:alteracaoEstoque1 rdf:type owl:NamedIndividual , :AlteracaoEstoque .
+
+:compra1 rdf:type owl:NamedIndividual , :CompraDeProdutos ;
+    gufo:broughtAbout :situacaoCompra1 .
+
+:situacaoCompra1 rdf:type owl:NamedIndividual , :ProdutoComprado ;
+    gufo:contributedToTrigger :gerarContas1 , :alteracaoEstoque2 .
+
+:fornecimento1 rdf:type owl:NamedIndividual , :FornecedorProduto ;
+    gufo:wasCreatedIn :compra1 ;
+    gufo:mediates :techLtda , :notebook .
+
+:gerarContas1 rdf:type owl:NamedIndividual , :GerarContas .
+
+:conta1 rdf:type owl:NamedIndividual ;
+    gufo:wasCreatedIn :gerarContas1 ;
+    :pertenceAEmpresa :nossaEmpresa .
+
+:contasDaNossaEmpresa rdf:type owl:NamedIndividual , :ContasDaEmpresa ;
+    gufo:mediates :conta1 , :nossaEmpresa .
+
+:alteracaoEstoque2 rdf:type owl:NamedIndividual , :AlteracaoEstoque .
+
+:operacao1 rdf:type owl:NamedIndividual , :OperacaoParcelada ;
+    gufo:isComponentOf :cobranca1 .
+
+:operacao2 rdf:type owl:NamedIndividual , :OperacaoAvista ;
+    gufo:isComponentOf :conta1 .
+
+[ rdf:type owl:AllDifferent ;
+  owl:distinctMembers ( :joao :mercadoLtda :techLtda :carlos :maria :nossaEmpresa
+                        :notebook :mouse :cadeira :estoqueCentral
+                        :venda1 :venda2 :venda3 :situacaoVenda1 :historico1
+                        :gerarCobranca1 :cobranca1 :pendencia1 :alteracaoEstoque1
+                        :compra1 :situacaoCompra1 :fornecimento1 :gerarContas1
+                        :conta1 :contasDaNossaEmpresa :alteracaoEstoque2
+                        :operacao1 :operacao2 )
+] .
+
+:nome rdf:type owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "nome"@pt ;
+    rdfs:domain [ rdf:type owl:Class ; owl:unionOf ( :Pessoa :Empresa :Produto ) ] ;
+    rdfs:range xsd:string .
+
+:cpf rdf:type owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "cpf"@pt ;
+    rdfs:domain :Pessoa ;
+    rdfs:range xsd:string .
+
+:cnpj rdf:type owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "cnpj"@pt ;
+    rdfs:domain [ rdf:type owl:Class ; owl:unionOf ( :Pessoa :Empresa ) ] ;
+    rdfs:range xsd:string .
+
+:preco rdf:type owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "preco"@pt ;
+    rdfs:domain :Produto ;
+    rdfs:range xsd:decimal .
+
+:quantidade rdf:type owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "quantidade"@pt ;
+    rdfs:domain :Estoque ;
+    rdfs:range xsd:integer .
+
+:data rdf:type owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "data"@pt ;
+    rdfs:domain [ rdf:type owl:Class ; owl:unionOf ( :RegistroDeVenda :CompraDeProdutos ) ] ;
+    rdfs:range xsd:dateTime .
+
+:valor rdf:type owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "valor"@pt ;
+    rdfs:domain [ rdf:type owl:Class ; owl:unionOf ( :Cobranca :Conta :OperacaoFinanceira :RegistroDeVenda ) ] ;
+    rdfs:range xsd:decimal .
+
+:vencimento rdf:type owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "vencimento"@pt ;
+    rdfs:domain [ rdf:type owl:Class ; owl:unionOf ( :Cobranca :Conta ) ] ;
+    rdfs:range xsd:dateTime .
+
+:numeroParcelas rdf:type owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "numeroParcelas"@pt ;
+    rdfs:domain :OperacaoParcelada ;
+    rdfs:range xsd:integer .
+
+:joao :nome "João"^^xsd:string ;
+    :cpf "111.111.111-11"^^xsd:string .
+:carlos :nome "Carlos"^^xsd:string ;
+    :cpf "222.222.222-22"^^xsd:string .
+:maria :nome "Maria"^^xsd:string ;
+    :cpf "333.333.333-33"^^xsd:string .
+:mercadoLtda :nome "Mercado Ltda"^^xsd:string ;
+    :cnpj "11.111.111/1111-11"^^xsd:string .
+:techLtda :nome "Tech Ltda"^^xsd:string ;
+    :cnpj "22.222.222/2222-22"^^xsd:string .
+:nossaEmpresa :nome "Nossa Empresa"^^xsd:string ;
+    :cnpj "33.333.333/3333-33"^^xsd:string .
+:notebook :nome "Notebook"^^xsd:string ;
+    :preco "3500.00"^^xsd:decimal .
+:mouse :nome "Mouse"^^xsd:string ;
+    :preco "80.00"^^xsd:decimal .
+:cadeira :nome "Cadeira"^^xsd:string ;
+    :preco "600.00"^^xsd:decimal .
+:estoqueCentral :quantidade "20"^^xsd:integer .
+:venda1 :data "2026-11-03T10:00:00"^^xsd:dateTime ;
+    :valor "3500.00"^^xsd:decimal .
+:venda2 :data "2026-11-10T15:30:00"^^xsd:dateTime ;
+    :valor "80.00"^^xsd:decimal .
+:venda3 :data "2026-11-12T09:00:00"^^xsd:dateTime ;
+    :valor "600.00"^^xsd:decimal .
+:compra1 :data "2026-10-20T14:00:00"^^xsd:dateTime .
+:cobranca1 :valor "3500.00"^^xsd:decimal ;
+    :vencimento "2026-12-03T00:00:00"^^xsd:dateTime .
+:conta1 :valor "28000.00"^^xsd:decimal ;
+    :vencimento "2026-11-20T00:00:00"^^xsd:dateTime .
+:operacao1 :valor "3500.00"^^xsd:decimal ;
+    :numeroParcelas "3"^^xsd:integer .
+:operacao2 :valor "28000.00"^^xsd:decimal .
