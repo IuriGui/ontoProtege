@@ -210,7 +210,7 @@ Pessoa and Empresa
 - **Resultado esperado:** owl:Nothing
 - **Por quê:** as duas classes são disjuntas, então nenhuma instância pode pertencer a ambas.
 
-### 6.2 Quais clientes não são empresas?
+### 6.2 Quais clientes certamente não são a empresa que utiliza o ERP?
 
 ```
 Cliente and not Empresa
@@ -370,7 +370,7 @@ RegistroDeVenda and (inverse participatedIn min 2 Cliente)
 - **Marcar:** Equivalent classes
 - **Resultado esperado:** owl:Nothing
 
-### QC15 Quais clientes certamente não são empresas?
+### QC15 Quais clientes certamente não são a empresa que utiliza o ERP?
 
 ```
 Cliente and not Empresa
